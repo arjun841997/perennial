@@ -1,6 +1,5 @@
 import React from 'react';
-import './App.css';
-import { User } from './features/user/User'
+import { User } from './features/user/components/User/User'
 
 function App() {
   return (

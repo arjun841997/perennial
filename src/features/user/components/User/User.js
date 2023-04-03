@@ -1,21 +1,22 @@
 import React, { useEffect, useState, useLayoutEffect, useRef } from 'react';
-import { getusersAsync, selectUsers }from './userSlice'
+import { getUsersAction, isLoading, selectUsers }from '../../redux/userSlice'
 import { useDispatch,  useSelector } from 'react-redux';
-import styles from './User.module.css';
+import styles from './css/User.module.css';
 
 export function User() {
   const dispatch = useDispatch();
   const usersProps = useSelector(selectUsers);
+  const statusProps = useSelector(isLoading);  
   const [userSearch, setUserSearch] = useState("");
   const [users, setUsers] = useState([]);
   const targetRef = useRef();
   const [dimensions, setDimensions] = useState({ width:0, height: 0 });
-  const [modalVisiable, setModalVisiblity] = useState(false);
+  const [modalVisiblity, setModalVisiblity] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
 
 
   useEffect(() => {
-    dispatch(getusersAsync())
+    dispatch(getUsersAction())
   },[dispatch])
 
   useEffect(() => {
@@ -46,26 +47,31 @@ export function User() {
 
   return (
     <>    
-    {modalVisiable && 
+    {modalVisiblity && 
       <div className={styles.modal} >
         <div className={styles.modalContent}>
+          
           <span onClick={() => {setModalVisiblity(false)}} className={styles.close}>&times;</span>
+          <img src={selectedUser.picture.large} alt="user "  width="50" height="50" />
           <p><h1>{selectedUser.name.first} {selectedUser.name.last}</h1>              
           <br />     <span>ID: {selectedUser.id.value}</span><br/>
-                  <span>Phone no: {selectedUser.phone}</span>
+                  <span>Phone no: {selectedUser.phone}</span><br/>
+                  <span>Email : {selectedUser.email}</span> <br />
+                  <span>City : {selectedUser.location.city}</span>  
                   </p>                    
         </div>
       </div>
-    }
-    
-    {/* <button onclick={() => { document.getElementById('myModal').style.display='block'}} class="w3-button w3-black">Open Modal</button> */}
+    }        
   <div ref={targetRef}>  
-    <h1>User Listing App</h1>       
-    <input className={styles.input} onChange={handleOnChangeUserSearch} value={userSearch} />       
-    {users && users.length > 0 && users.map((user) => {
+    <h1 className={styles.title}>User Listing App</h1>       
+    <input placeholder='Search User..' className={styles.input} onChange={handleOnChangeUserSearch} value={userSearch} />       
+    {statusProps === "loading" ?     
+    <div className={styles.loader}></div>
+    :<>
+    {users && users.length > 0 ? users.map((user) => {
       return (
-        <div className={styles.card} onClick={() => {setModalVisiblity(true);setSelectedUser(user)}}>
-            <img src={user.picture.medium} alt="user "  width="50" height="50" />
+        <div className={dimensions.width > 460 ? styles.card : styles.cardresponsive} onClick={() => {setModalVisiblity(true);setSelectedUser(user)}}>
+            <img src={user.picture.large} alt="user "  width="50" height="50" />
             <div className={styles.container}>            
               <h1>{user.name.first} {user.name.last}</h1>              
               {
@@ -80,7 +86,13 @@ export function User() {
             </div>
         </div>
       )
-  })}
+     
+  })
+  :
+  <div className={styles.alignCenter}>No data found with given search.</div>
+}
+  </>
+}
 
   </div> 
   </>
